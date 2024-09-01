@@ -34,16 +34,18 @@ const createUser = async (req: Request, res: Response) => {
         let { login, password } = req.body
         if (!login || !password) return res.status(400).json({ message: 'Preencha todos os dados' })
         login = login.toLowerCase()
+
         const queryExists = 'SELECT EXISTS (SELECT 1 FROM users WHERE login = $1);'
         const exists = await client.query(queryExists, [login])
         if (exists.rows[0].exists) return res.status(400).json({ message: "Este login já está cadastrado." })
 
         const passwordHashed = await hashPassword(password)
         const insertQuery = `
-        INSERT INTO users (login, password) 
-        VALUES ($1, $2);
+        INSERT INTO users (login, password, create_at) 
+        VALUES ($1, $2, $3);
         `
-        const values = [login, passwordHashed]
+        const now = new Date()
+        const values = [login, passwordHashed, now]
         await client.query(insertQuery, values)
         return res.status(201).json({ message: 'Conta criada com sucesso.' })
     } catch (error) {
@@ -135,18 +137,22 @@ const includeUserGames = async (req: Request, res: Response) => {
     try {
         const { userId, gameId } = req.body
 
-        const queryExists = 'SELECT EXISTS (SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2 );'
+
+        const queryExists = 'SELECT EXISTS (SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2);'
         const exists = await client.query(queryExists, [userId, gameId])
         if (exists.rows[0].exists) return res.status(400).json({ message: "Você já possui este jogo." })
+
+        const now = new Date()
         const insertQuery = `
-        INSERT INTO user_games (user_id, game_id) 
-        VALUES ($1, $2);
+        INSERT INTO user_games (user_id, game_id, create_at) 
+        VALUES ($1, $2, $3);
         `
-        const values = [userId, gameId]
+        const values = [userId, gameId, now]
         await client.query(insertQuery, values)
         return res.status(201).json({ message: "Jogo comprado com sucesso." })
 
     } catch (error) {
+        console.log(error)
         return res.status(500).json({ message: "Erro interno de servidor." })
     } finally {
         client.release()
