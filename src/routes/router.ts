@@ -1,24 +1,19 @@
 import { Router } from 'express'
-import { createUser, getGame, getGames, getUserGames, includeUserGames, login, searchGames, verifyUser } from '../controllers/controller'
+import { createUser, getGame, getGames, getUserGames, getUserStore, includeUserGames, includeUserStore, login, searchGames, verifyUser } from '../controllers/controller'
 import { verifyToken } from '../middlewares/jwt';
 const router = Router();
 
-
-
-router.get('/getGames', getGames)
-router.get('/searchGames', searchGames)
-router.get('/getGame', getGame)
+// Routes --->
 router.post('/login', login)
-router.get('/verifyUser', verifyToken, verifyUser)
-router.post('/includeUserGames', verifyToken, includeUserGames)
 router.post('/createUser', createUser)
 
+router.get('/getGames', getGames)
+router.get('/getGame', getGame)
+router.get('/searchGames', searchGames)
 router.get('/getUserGames', verifyToken, getUserGames)
-
-
-
-
+// router.get('/verifyUser', verifyToken, verifyUser)
+router.post('/includeUserGames', verifyToken, includeUserGames)
+router.post('/includeUserStore', verifyToken, includeUserStore)
+router.get('/getUserStore', verifyToken, getUserStore)
 
 export default router
-
-

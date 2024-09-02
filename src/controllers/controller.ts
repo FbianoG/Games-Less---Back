@@ -136,17 +136,12 @@ const includeUserGames = async (req: Request, res: Response) => {
     const client = await pool.connect()
     try {
         const { userId, gameId } = req.body
-
-
         const queryExists = 'SELECT EXISTS (SELECT 1 FROM user_games WHERE user_id = $1 AND game_id = $2);'
         const exists = await client.query(queryExists, [userId, gameId])
         if (exists.rows[0].exists) return res.status(400).json({ message: "Você já possui este jogo." })
 
         const now = new Date()
-        const insertQuery = `
-        INSERT INTO user_games (user_id, game_id, create_at) 
-        VALUES ($1, $2, $3);
-        `
+        const insertQuery = `INSERT INTO user_games (user_id, game_id, create_at) VALUES ($1, $2, $3);`
         const values = [userId, gameId, now]
         await client.query(insertQuery, values)
         return res.status(201).json({ message: "Jogo comprado com sucesso." })
@@ -159,5 +154,43 @@ const includeUserGames = async (req: Request, res: Response) => {
     }
 }
 
+const includeUserStore = async (req: Request, res: Response) => {
+    const client = await pool.connect()
+    try {
+        const { userId, gameId } = req.body
 
-export { getGames, searchGames, getGame, login, verifyUser, includeUserGames, getUserGames, createUser }
+        // Exists
+        const queryExists = 'SELECT EXISTS (SELECT 1 FROM user_store WHERE user_id = $1 AND game_id = $2);'
+        const exists = await client.query(queryExists, [userId, gameId])
+        if (exists.rows[0].exists) return res.status(400).json({ message: "Este jogo já está em seu carrinho." })
+
+        const insertQuery = `INSERT INTO user_store (user_id, game_id) VALUES ($1, $2);`
+        const values = [userId, gameId]
+        await client.query(insertQuery, values)
+        return res.status(201).json({ message: "Jogo incluído em seu carrinho. " })
+
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: "Erro interno de servidor." })
+    } finally {
+        client.release()
+    }
+}
+
+const getUserStore = async (req: Request, res: Response) => {
+    const client = await pool.connect()
+    try {
+        const { id } = (req as any).user.id
+        const searchQuery = 'SELECT * FROM user_store WHERE user_id = $1;'
+        const store = await client.query(searchQuery, [id])
+        return res.status(200).json(store.rows)
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: 'Error interno de servidor.' })
+    } finally {
+        client.release()
+    }
+}
+
+
+export { getGames, searchGames, getGame, login, verifyUser, includeUserGames, getUserGames, createUser, includeUserStore, getUserStore }
