@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { createUser, getGame, getGames, getUserGames, getUserStore, includeUserGames, includeUserStore, login, searchGames, verifyUser } from '../controllers/controller'
+import { createUser, deleteStore, getGame, getGames, getUserGames, getUserStore, includeUserGames, includeUserStore, login, searchGames, verifyUser } from '../controllers/controller'
 import { verifyToken } from '../middlewares/jwt';
 const router = Router();
 
@@ -14,6 +14,7 @@ router.get('/getUserGames', verifyToken, getUserGames)
 // router.get('/verifyUser', verifyToken, verifyUser)
 router.post('/includeUserGames', verifyToken, includeUserGames)
 router.post('/includeUserStore', verifyToken, includeUserStore)
+router.post('/deleteStore', verifyToken, deleteStore)
 router.get('/getUserStore', verifyToken, getUserStore)
 
 export default router

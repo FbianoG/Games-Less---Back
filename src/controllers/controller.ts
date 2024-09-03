@@ -16,7 +16,6 @@ const login = async (req: Request, res: Response) => {
 
         const comparePasswords = await comparePassword(password, loginUser.rows[0].password)
         if (!comparePasswords) return res.status(400).json({ message: 'Login ou senha inválidos.' })
-        console.log(comparePasswords)
         delete loginUser.rows[0].password
         const token = await createToken(loginUser.rows[0])
         return res.status(200).json({ user: loginUser.rows[0], token })
@@ -192,5 +191,21 @@ const getUserStore = async (req: Request, res: Response) => {
     }
 }
 
+const deleteStore = async (req: Request, res: Response) => {
+    const client = await pool.connect()
+    try {
+        const { game_id } = req.body
+        const user_id = (req as any).user.id.id
+        console.log(user_id, game_id)
+        const queryDelete = 'DELETE FROM user_store WHERE user_id = $1 AND game_id = $2;'
+        const af = await client.query(queryDelete, [user_id, game_id])
+        return res.status(200).json({ message: 'Jogo removido da sua lista de desejos!' })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: 'Erro interno de servido.' })
+    } finally {
+        client.release()
+    }
+}
 
-export { getGames, searchGames, getGame, login, verifyUser, includeUserGames, getUserGames, createUser, includeUserStore, getUserStore }
+export { getGames, searchGames, getGame, login, verifyUser, includeUserGames, getUserGames, createUser, includeUserStore, getUserStore, deleteStore }
