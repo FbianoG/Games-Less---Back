@@ -11,7 +11,7 @@ const login = async (req: Request, res: Response) => {
         login = login.toLowerCase()
 
         const query = 'SELECT * FROM users WHERE login = $1;'
-        const loginUser = await pool.query(query, [login])
+        const loginUser = await client.query(query, [login])
         if (loginUser.rows.length === 0) return res.status(404).json({ message: 'Login ou senha inválidos.' })
 
         const comparePasswords = await comparePassword(password, loginUser.rows[0].password)
